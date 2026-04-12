@@ -17,3 +17,8 @@ node_modules/
 
 # Claude Code local settings (keep agents/ and agent-memory/)
 .claude/settings.local.json
+
+# Proprietary docs — keep out of public repo
+Optic_Odds_Lesson.md
+KALSHI_SPORTSBOOK_KNOWLEDGE.md
+docs/
