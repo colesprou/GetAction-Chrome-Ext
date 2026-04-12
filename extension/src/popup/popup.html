@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Kalshi Sharp FV</title>
+    <style>
+      body { font: 13px/1.4 -apple-system, system-ui, sans-serif; width: 320px; padding: 12px; margin: 0; background: #0f1115; color: #e6e8eb; }
+      h1 { font-size: 13px; margin: 0 0 10px; letter-spacing: 0.02em; }
+      h2 { font-size: 11px; margin: 14px 0 6px; color: #8a92a0; text-transform: uppercase; letter-spacing: 0.06em; }
+      label { display: block; margin: 6px 0 4px; font-size: 11px; color: #8a92a0; }
+      input { width: 100%; padding: 6px 8px; background: #161a20; color: #e6e8eb; border: 1px solid #272b33; border-radius: 4px; font-size: 12px; font-family: ui-monospace, Menlo, monospace; }
+      .row { display: flex; gap: 6px; margin-top: 8px; }
+      button { padding: 6px 10px; background: #3b82f6; color: white; border: 0; border-radius: 4px; cursor: pointer; font-size: 12px; flex: 1; }
+      button:hover { background: #2563eb; }
+      button.secondary { background: #272b33; }
+      button.secondary:hover { background: #353a44; }
+      .status { margin-top: 8px; font-size: 11px; color: #8a92a0; }
+      .status.ok { color: #4ade80; }
+      .status.err { color: #f87171; }
+      pre { margin: 6px 0 0; padding: 8px; background: #0b0d11; border: 1px solid #272b33; border-radius: 4px; font-size: 10px; line-height: 1.35; max-height: 220px; overflow: auto; font-family: ui-monospace, Menlo, monospace; color: #b8beca; white-space: pre-wrap; word-break: break-all; }
+    </style>
+  </head>
+  <body>
+    <h1>Kalshi Sharp Fair Value</h1>
+
+    <h2>Backend</h2>
+    <label for="backendUrl">URL</label>
+    <input id="backendUrl" placeholder="http://localhost:8000" />
+    <label for="extensionToken">Token</label>
+    <input id="extensionToken" type="password" placeholder="dev-local-token" />
+    <div class="row">
+      <button id="save">Save</button>
+      <button id="ping" class="secondary">Ping</button>
+    </div>
+    <div class="status" id="status"></div>
+
+    <h2>Test ticker</h2>
+    <label for="testTicker">Kalshi ticker</label>
+    <input id="testTicker" placeholder="KXMLBGAME-26APR101420PITCHC-CHC" />
+    <div class="row">
+      <button id="test">Fetch fair value</button>
+    </div>
+    <pre id="result" hidden></pre>
+
+    <h2>KPI header</h2>
+    <div class="row">
+      <button id="resetKpi" class="secondary">Reset position & size</button>
+    </div>
+
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

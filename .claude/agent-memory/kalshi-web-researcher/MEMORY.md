@@ -1,0 +1,5 @@
+- [Kalshi Extension Project Context](project_kalshi_extension.md) — project purpose, known scraper bugs, and research doc location
+- [Kalshi URL & Ticker Patterns](kalshi_url_and_ticker_patterns.md) — correct event ticker extraction, series prefixes per sport, Optic Odds ticker mapping
+- [Kalshi DOM Patterns](kalshi_dom_patterns.md) — stable selectors, selected-team detection via aside h2, orderbook structure, __NEXT_DATA__ shortcut
+- [Kalshi Portfolio / Resting Orders Patterns](kalshi_portfolio_patterns.md) — /portfolio?tab=resting DOM structure, ticker extraction from row link href, EV direction, badge injection strategy
+- [Kalshi Positions Tab Patterns](kalshi_positions_patterns.md) — /portfolio?tab=positions, side encoding unknowns, EV formula difference, row detection without Buy-text filter

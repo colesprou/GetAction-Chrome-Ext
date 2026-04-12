@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Kalshi Sharp Fair Value",
+  "version": "0.1.0",
+  "description": "Overlay sharp-book fair value and edge on Kalshi sports markets.",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://kalshi.com/*",
+    "https://*.kalshi.com/*",
+    "http://localhost/*",
+    "http://localhost:*/*",
+    "http://127.0.0.1/*",
+    "http://127.0.0.1:*/*"
+  ],
+  "action": {
+    "default_title": "Kalshi Sharp Fair Value",
+    "default_popup": "src/popup/popup.html"
+  },
+  "background": {
+    "service_worker": "src/background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://kalshi.com/*",
+        "https://*.kalshi.com/*"
+      ],
+      "js": ["src/content/content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

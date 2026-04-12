@@ -1,0 +1,23 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ../backend
+    environment:
+      ODDSJAM_API_KEY: ${ODDSJAM_API_KEY:?set in .env}
+      OPTIC_ODDS_BASE_URL: https://api.opticodds.com/api/v3
+      REDIS_URL: redis://redis:6379/0
+      EXTENSION_SHARED_TOKEN: ${EXTENSION_SHARED_TOKEN:-dev-local-token}
+      DEFAULT_SHARP_BOOKS: "Pinnacle,Betcris,BetOnline,Circa Sports"
+      MIN_SHARP_BOOKS: 2
+      LOG_LEVEL: INFO
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    restart: unless-stopped
