@@ -22,3 +22,7 @@ class FairValueRequest(BaseModel):
         default=None, description="Human-readable team that Kalshi YES refers to"
     )
     orderbook: Optional[Orderbook] = None
+    books_override: Optional[dict[str, list[str]]] = Field(
+        default=None,
+        description="Per-league book overrides from user settings. Keys are league strings, values are book name lists.",
+    )

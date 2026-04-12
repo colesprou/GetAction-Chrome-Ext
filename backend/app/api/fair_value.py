@@ -74,10 +74,20 @@ async def post_fair_value(
             status="unmapped", reason="unknown_league_prefix"
         )
 
-    # Pick the book list for this league. Some leagues (e.g. NBA) don't have
-    # Pinnacle/Circa coverage on Optic, so we fall back to the best available
-    # retail set defined in settings.per_league_books.
-    league_books = settings.books_for_league(league)
+    # Pick the book list for this league. User overrides (from the extension
+    # popup's Sharp Books tab) take precedence over the server config.
+    if body.books_override and league in body.books_override:
+        league_books = body.books_override[league]
+    elif body.books_override:
+        # Try case-insensitive match (user prefs might have different casing).
+        league_upper = league.upper()
+        matched = next(
+            (v for k, v in body.books_override.items() if k.upper() == league_upper),
+            None,
+        )
+        league_books = matched if matched else settings.books_for_league(league)
+    else:
+        league_books = settings.books_for_league(league)
 
     fixtures: Optional[list[dict]] = None
     source_used: str = settings.odds_source

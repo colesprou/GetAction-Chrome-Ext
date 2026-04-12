@@ -38,6 +38,9 @@ async function timedFetch(url, init, timeoutMs) {
 
 async function handleFetchFairValue(payload) {
   const config = await loadConfig();
+  // Inject user's sharp book preferences into the payload so the backend
+  // can use them instead of its defaults.
+  const enriched = await enrichWithBookPrefs(payload);
   try {
     const res = await timedFetch(
       `${config.backendUrl}/fair-value`,
@@ -47,7 +50,7 @@ async function handleFetchFairValue(payload) {
           "Content-Type": "application/json",
           "X-Extension-Token": config.extensionToken,
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(enriched),
       },
       config.requestTimeoutMs,
     );
@@ -62,6 +65,7 @@ async function handleFetchFairValue(payload) {
 
 async function handleResolveEvent(payload) {
   const config = await loadConfig();
+  const enriched = await enrichWithBookPrefs(payload);
   try {
     const res = await timedFetch(
       `${config.backendUrl}/resolve-event`,
@@ -71,7 +75,7 @@ async function handleResolveEvent(payload) {
           "Content-Type": "application/json",
           "X-Extension-Token": config.extensionToken,
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(enriched),
       },
       config.requestTimeoutMs,
     );
@@ -82,6 +86,22 @@ async function handleResolveEvent(payload) {
   } catch (err) {
     return { status: "error", code: "network_error", message: String(err) };
   }
+}
+
+// Read user's sharp book preferences from storage and attach them to the
+// request payload. The backend checks for a `books_override` field and
+// uses it instead of its default per-league config.
+async function enrichWithBookPrefs(payload) {
+  try {
+    const stored = await chrome.storage.local.get("sharpBookPrefs");
+    const prefs = stored.sharpBookPrefs;
+    if (prefs && Object.keys(prefs).length > 0) {
+      return { ...payload, books_override: prefs };
+    }
+  } catch {
+    // storage unavailable
+  }
+  return payload;
 }
 
 async function handlePing(backendUrlOverride) {

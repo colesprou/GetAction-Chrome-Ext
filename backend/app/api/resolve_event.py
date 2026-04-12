@@ -41,6 +41,10 @@ class ResolveEventRequest(BaseModel):
     title: str = Field(..., description="Event title from the group header, e.g. 'Alcaraz vs Sinner'")
     team: str = Field(..., description="Team/player name from the order row, e.g. 'Jannik Sinner'")
     side: str = Field(..., description="'yes' or 'no'")
+    books_override: Optional[dict[str, list[str]]] = Field(
+        default=None,
+        description="Per-league book overrides from user settings.",
+    )
 
 
 router = APIRouter(tags=["resolve"])
@@ -89,7 +93,21 @@ async def post_resolve_event(
 
     # Fetch ALL leagues in parallel so we don't pay sequential latency.
     import asyncio as _aio
-    league_books_map = {lg: settings.books_for_league(lg) for lg in SEARCHABLE_LEAGUES}
+    # User overrides take precedence per league.
+    def _books_for(lg):
+        if body.books_override:
+            if lg in body.books_override:
+                return body.books_override[lg]
+            lg_upper = lg.upper()
+            matched = next(
+                (v for k, v in body.books_override.items() if k.upper() == lg_upper),
+                None,
+            )
+            if matched:
+                return matched
+        return settings.books_for_league(lg)
+
+    league_books_map = {lg: _books_for(lg) for lg in SEARCHABLE_LEAGUES}
 
     async def _fetch_league(lg):
         try:

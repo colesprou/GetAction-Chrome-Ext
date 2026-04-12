@@ -4,49 +4,254 @@
     <meta charset="utf-8" />
     <title>Kalshi Sharp FV</title>
     <style>
-      body { font: 13px/1.4 -apple-system, system-ui, sans-serif; width: 320px; padding: 12px; margin: 0; background: #0f1115; color: #e6e8eb; }
-      h1 { font-size: 13px; margin: 0 0 10px; letter-spacing: 0.02em; }
-      h2 { font-size: 11px; margin: 14px 0 6px; color: #8a92a0; text-transform: uppercase; letter-spacing: 0.06em; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font: 13px/1.5 -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
+        width: 380px;
+        background: #0f1115;
+        color: #e6e8eb;
+      }
+
+      /* Header */
+      .popup-header {
+        padding: 14px 16px 10px;
+        border-bottom: 1px solid #1a1d23;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .popup-header .dot {
+        width: 8px; height: 8px; border-radius: 50%;
+        background: #4ade80;
+        box-shadow: 0 0 6px rgba(74, 222, 128, 0.5);
+      }
+      .popup-header h1 {
+        font-size: 14px; font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+      .popup-header .version {
+        font-size: 10px; color: #6b7280;
+        margin-left: auto;
+      }
+
+      /* Tabs */
+      .tabs {
+        display: flex;
+        border-bottom: 1px solid #1a1d23;
+        background: #0b0d11;
+      }
+      .tab {
+        flex: 1;
+        padding: 8px 0;
+        text-align: center;
+        font-size: 11px;
+        font-weight: 600;
+        color: #6b7280;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        transition: color 0.15s, border-color 0.15s;
+      }
+      .tab:hover { color: #b8beca; }
+      .tab.active { color: #e6e8eb; border-bottom-color: #3b82f6; }
+
+      /* Tab panels */
+      .panel { display: none; padding: 14px 16px; }
+      .panel.active { display: block; }
+
+      /* Section headers */
+      .section {
+        font-size: 10px;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin: 14px 0 8px;
+      }
+      .section:first-child { margin-top: 0; }
+
+      /* Form elements */
       label { display: block; margin: 6px 0 4px; font-size: 11px; color: #8a92a0; }
-      input { width: 100%; padding: 6px 8px; background: #161a20; color: #e6e8eb; border: 1px solid #272b33; border-radius: 4px; font-size: 12px; font-family: ui-monospace, Menlo, monospace; }
-      .row { display: flex; gap: 6px; margin-top: 8px; }
-      button { padding: 6px 10px; background: #3b82f6; color: white; border: 0; border-radius: 4px; cursor: pointer; font-size: 12px; flex: 1; }
-      button:hover { background: #2563eb; }
-      button.secondary { background: #272b33; }
-      button.secondary:hover { background: #353a44; }
-      .status { margin-top: 8px; font-size: 11px; color: #8a92a0; }
+      input[type="text"], input[type="password"], input[type="url"] {
+        width: 100%;
+        padding: 7px 10px;
+        background: #161a20;
+        color: #e6e8eb;
+        border: 1px solid #272b33;
+        border-radius: 6px;
+        font-size: 12px;
+        font-family: ui-monospace, Menlo, monospace;
+        transition: border-color 0.15s;
+      }
+      input:focus { border-color: #3b82f6; outline: none; }
+
+      /* Buttons */
+      .btn-row { display: flex; gap: 8px; margin-top: 10px; }
+      button {
+        padding: 7px 14px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+        flex: 1;
+        transition: background 0.15s;
+      }
+      .btn-primary { background: #3b82f6; color: white; }
+      .btn-primary:hover { background: #2563eb; }
+      .btn-secondary { background: #1f2937; color: #b8beca; }
+      .btn-secondary:hover { background: #2d3748; }
+      .btn-danger { background: #7f1d1d; color: #fca5a5; }
+      .btn-danger:hover { background: #991b1b; }
+
+      /* Status messages */
+      .status { margin-top: 8px; font-size: 11px; color: #8a92a0; min-height: 16px; }
       .status.ok { color: #4ade80; }
       .status.err { color: #f87171; }
-      pre { margin: 6px 0 0; padding: 8px; background: #0b0d11; border: 1px solid #272b33; border-radius: 4px; font-size: 10px; line-height: 1.35; max-height: 220px; overflow: auto; font-family: ui-monospace, Menlo, monospace; color: #b8beca; white-space: pre-wrap; word-break: break-all; }
+
+      /* League book sections */
+      .league-section {
+        margin: 10px 0;
+        padding: 10px 12px;
+        background: #0b0d11;
+        border: 1px solid #1a1d23;
+        border-radius: 8px;
+      }
+      .league-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 6px;
+      }
+      .league-name {
+        font-size: 12px;
+        font-weight: 600;
+        color: #b8beca;
+      }
+      .league-tag {
+        font-size: 9px;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 3px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .league-tag.sharp { background: rgba(74, 222, 128, 0.15); color: #4ade80; }
+      .league-tag.retail { background: rgba(251, 146, 60, 0.15); color: #fb923c; }
+
+      .book-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 10px;
+      }
+      .book-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11px;
+        color: #8a92a0;
+        cursor: pointer;
+        padding: 2px 0;
+      }
+      .book-item input[type="checkbox"] {
+        width: 14px; height: 14px;
+        accent-color: #3b82f6;
+        cursor: pointer;
+      }
+      .book-item:hover { color: #e6e8eb; }
+
+      /* Test ticker */
+      pre {
+        margin: 8px 0 0;
+        padding: 8px;
+        background: #0b0d11;
+        border: 1px solid #1a1d23;
+        border-radius: 6px;
+        font-size: 10px;
+        line-height: 1.35;
+        max-height: 180px;
+        overflow: auto;
+        font-family: ui-monospace, Menlo, monospace;
+        color: #b8beca;
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+
+      /* Info text */
+      .info {
+        font-size: 10px;
+        color: #6b7280;
+        margin-top: 4px;
+        line-height: 1.4;
+      }
     </style>
   </head>
   <body>
-    <h1>Kalshi Sharp Fair Value</h1>
-
-    <h2>Backend</h2>
-    <label for="backendUrl">URL</label>
-    <input id="backendUrl" placeholder="http://localhost:8000" />
-    <label for="extensionToken">Token</label>
-    <input id="extensionToken" type="password" placeholder="dev-local-token" />
-    <div class="row">
-      <button id="save">Save</button>
-      <button id="ping" class="secondary">Ping</button>
-    </div>
-    <div class="status" id="status"></div>
-
-    <h2>Test ticker</h2>
-    <label for="testTicker">Kalshi ticker</label>
-    <input id="testTicker" placeholder="KXMLBGAME-26APR101420PITCHC-CHC" />
-    <div class="row">
-      <button id="test">Fetch fair value</button>
-    </div>
-    <pre id="result" hidden></pre>
-
-    <h2>KPI header</h2>
-    <div class="row">
-      <button id="resetKpi" class="secondary">Reset position & size</button>
+    <div class="popup-header">
+      <span class="dot"></span>
+      <h1>Kalshi Sharp Fair Value</h1>
+      <span class="version" id="versionText">v0.1.0</span>
     </div>
 
-    <script type="module" src="popup.js"></script>
+    <div class="tabs">
+      <div class="tab active" data-panel="connection">Connection</div>
+      <div class="tab" data-panel="books">Sharp Books</div>
+      <div class="tab" data-panel="tools">Tools</div>
+    </div>
+
+    <!-- Connection Panel -->
+    <div class="panel active" id="panel-connection">
+      <div class="section">Backend</div>
+      <label for="backendUrl">URL</label>
+      <input type="url" id="backendUrl" placeholder="http://localhost:8000" />
+      <label for="extensionToken">Token</label>
+      <input type="password" id="extensionToken" placeholder="dev-local-token" />
+      <div class="btn-row">
+        <button class="btn-primary" id="save">Save</button>
+        <button class="btn-secondary" id="ping">Ping</button>
+      </div>
+      <div class="status" id="connStatus"></div>
+    </div>
+
+    <!-- Sharp Books Panel -->
+    <div class="panel" id="panel-books">
+      <div class="section">Sharp Book Selection</div>
+      <div class="info">Select which sportsbooks to use for fair value calculations per league. More books = wider consensus but potentially slower.</div>
+
+      <div id="leagueBooksList"></div>
+
+      <div class="btn-row" style="margin-top: 14px;">
+        <button class="btn-primary" id="saveBooks">Save Books</button>
+        <button class="btn-secondary" id="resetBooks">Reset to Defaults</button>
+      </div>
+      <div class="status" id="booksStatus"></div>
+    </div>
+
+    <!-- Tools Panel -->
+    <div class="panel" id="panel-tools">
+      <div class="section">Test Ticker</div>
+      <label for="testTicker">Kalshi ticker</label>
+      <input type="text" id="testTicker" placeholder="KXMLBGAME-26APR101420PITCHC-CHC" />
+      <div class="btn-row">
+        <button class="btn-primary" id="test">Fetch Fair Value</button>
+      </div>
+      <pre id="result" hidden></pre>
+      <div class="status" id="testStatus"></div>
+
+      <div class="section">KPI Header</div>
+      <div class="btn-row">
+        <button class="btn-secondary" id="resetKpi">Reset Position & Size</button>
+      </div>
+
+      <div class="section">About</div>
+      <div class="info">
+        Sharp-book devigged fair value overlay for Kalshi sports markets.<br>
+        Supports MLB, NBA, NHL, NFL, ATP, WTA, EPL, UCL.<br>
+        Backend: FastAPI + Optic Odds v3.<br>
+      </div>
+    </div>
+
+    <script src="popup.js"></script>
   </body>
 </html>
