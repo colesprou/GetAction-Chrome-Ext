@@ -4,54 +4,70 @@ const $ = (id) => document.getElementById(id);
 // League + book configuration
 // =========================================================================
 
-// Available books per league. The "default" array is what ships out of the
-// box; users can toggle any book on or off. The "tag" indicates sharp vs
-// retail for the UI label.
+// All sportsbooks available on Optic Odds, categorized.
+const SHARP_BOOKS = ["Pinnacle", "Betcris", "BetOnline", "Circa Sports"];
+const RETAIL_BOOKS = ["DraftKings", "FanDuel", "Caesars", "BetMGM", "ESPN BET", "Hard Rock", "Fanatics", "Bovada", "BookMaker", "BetAmapola"];
+const EXCHANGE_BOOKS = ["Novig", "Polymarket"];
+const ALL_BOOKS = [...SHARP_BOOKS, ...RETAIL_BOOKS, ...EXCHANGE_BOOKS];
+
+// Per-league config.
+//   defaults: books checked on first install (the recommended set).
+//   available: every book Optic returns for this league (verified live).
+//   tag: "sharp" or "retail" — UI label to indicate quality of the default set.
 const LEAGUE_BOOKS = {
   MLB: {
     label: "MLB — Baseball",
     tag: "sharp",
-    books: ["Pinnacle", "Betcris", "BetOnline", "Circa Sports"],
+    defaults: ["Pinnacle", "Betcris", "BetOnline", "Circa Sports"],
+    available: ALL_BOOKS,
   },
   NHL: {
     label: "NHL — Hockey",
     tag: "sharp",
-    books: ["Pinnacle", "Betcris", "BetOnline", "Circa Sports"],
+    defaults: ["Pinnacle", "Betcris", "BetOnline", "Circa Sports"],
+    available: ALL_BOOKS,
   },
   NBA: {
     label: "NBA — Basketball",
     tag: "retail",
-    books: ["DraftKings", "FanDuel", "Caesars", "Fanatics"],
+    defaults: ["DraftKings", "FanDuel", "Caesars", "Fanatics"],
+    available: ALL_BOOKS,
   },
   NFL: {
-    label: "NFL — Football",
+    label: "NFL — Football (seasonal)",
     tag: "sharp",
-    books: ["Pinnacle", "Betcris", "BetOnline", "Circa Sports"],
+    defaults: ["Pinnacle", "Betcris", "BetOnline", "Circa Sports"],
+    available: ALL_BOOKS,
   },
   ATP: {
     label: "ATP — Tennis",
     tag: "sharp",
-    books: ["Pinnacle", "BetOnline", "Betcris"],
+    defaults: ["Pinnacle", "BetOnline", "Betcris"],
+    available: [...SHARP_BOOKS, "DraftKings", "FanDuel", "Caesars", "BetMGM", "Fanatics", "Hard Rock", "Novig"],
   },
   WTA: {
     label: "WTA — Tennis",
     tag: "sharp",
-    books: ["Pinnacle", "BetOnline", "Betcris"],
+    defaults: ["Pinnacle", "BetOnline", "Betcris"],
+    available: [...SHARP_BOOKS, "DraftKings", "FanDuel", "Caesars", "BetMGM", "Fanatics", "Hard Rock", "Novig"],
   },
   ATP_CHALLENGER: {
     label: "ATP Challenger — Tennis",
     tag: "sharp",
-    books: ["Pinnacle", "BetOnline"],
+    defaults: ["Pinnacle", "BetOnline"],
+    available: ["Pinnacle", "BetOnline", "Betcris", "DraftKings", "FanDuel", "Caesars", "Fanatics", "Hard Rock", "Novig"],
   },
   "England - Premier League": {
-    label: "EPL — Soccer",
+    label: "EPL — English Premier League",
     tag: "sharp",
-    books: ["Pinnacle", "BetOnline", "Betcris", "Circa Sports"],
+    defaults: ["Pinnacle", "BetOnline", "Betcris", "Circa Sports"],
+    available: [...SHARP_BOOKS, "DraftKings", "FanDuel", "Caesars", "BetMGM", "ESPN BET", "Hard Rock", "Fanatics", "Bovada", "BookMaker", "Polymarket"],
   },
   "UEFA Champions League": {
-    label: "UCL — Soccer",
+    label: "UCL — Champions League",
     tag: "sharp",
-    books: ["Pinnacle", "BetOnline", "Betcris", "Circa Sports"],
+    defaults: ["Pinnacle", "BetOnline", "Betcris", "Circa Sports"],
+    available: [...SHARP_BOOKS, "DraftKings", "FanDuel", "Caesars", "BetMGM", "ESPN BET", "Hard Rock", "Fanatics", "Bovada", "BookMaker", "Polymarket"],
   },
 };
 
@@ -127,9 +143,27 @@ function renderBooksList() {
     container.innerHTML = "";
 
     for (const [league, config] of Object.entries(LEAGUE_BOOKS)) {
-      const userBooks = prefs[league]; // undefined = use defaults, array = user overrides
+      // User overrides: if the user has saved a selection for this league,
+      // use it. Otherwise, use the defaults.
+      const userBooks = prefs[league]; // undefined = use defaults
+      const activeBooks = userBooks || config.defaults;
+
       const section = document.createElement("div");
       section.className = "league-section";
+
+      // Show ALL available books, checking those that are active.
+      // Group them: sharp first, then retail, then exchanges.
+      const bookCheckboxes = config.available.map((book) => {
+        const checked = activeBooks.includes(book);
+        const isSharp = SHARP_BOOKS.includes(book);
+        const isExchange = EXCHANGE_BOOKS.includes(book);
+        const bookClass = isSharp ? "sharp" : isExchange ? "exchange" : "retail";
+        return `
+          <label class="book-item ${bookClass}">
+            <input type="checkbox" value="${book}" ${checked ? "checked" : ""} />
+            ${book}
+          </label>`;
+      }).join("");
 
       section.innerHTML = `
         <div class="league-header">
@@ -137,14 +171,7 @@ function renderBooksList() {
           <span class="league-tag ${config.tag}">${config.tag}</span>
         </div>
         <div class="book-list" data-league="${league}">
-          ${config.books.map((book) => {
-            const checked = userBooks ? userBooks.includes(book) : true;
-            return `
-              <label class="book-item">
-                <input type="checkbox" value="${book}" ${checked ? "checked" : ""} />
-                ${book}
-              </label>`;
-          }).join("")}
+          ${bookCheckboxes}
         </div>
       `;
       container.appendChild(section);
@@ -159,16 +186,21 @@ $("saveBooks").addEventListener("click", async () => {
     const checked = Array.from(list.querySelectorAll("input:checked")).map(
       (cb) => cb.value,
     );
-    // Only store if user deselected something (otherwise use defaults).
-    const defaults = LEAGUE_BOOKS[league]?.books || [];
+    // Only store if user changed something from defaults.
+    const defaults = LEAGUE_BOOKS[league]?.defaults || [];
     const isDefault = checked.length === defaults.length &&
+      defaults.every((b) => checked.includes(b)) &&
       checked.every((b) => defaults.includes(b));
     if (!isDefault) {
       prefs[league] = checked;
     }
   });
   await saveBookPrefs(prefs);
-  setStatus("booksStatus", "Saved. Fair values will use your selections.", "ok");
+  const count = Object.keys(prefs).length;
+  const msg = count > 0
+    ? `Saved. ${count} league(s) have custom books. Reload Kalshi tab.`
+    : "Saved (all defaults). Reload Kalshi tab.";
+  setStatus("booksStatus", msg, "ok");
 });
 
 $("resetBooks").addEventListener("click", async () => {
