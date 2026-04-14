@@ -278,6 +278,28 @@ def team_matches(needle: str, sel: str) -> bool:
     if len(n_words) <= len(s_words) and n_words == s_words[: len(n_words)]:
         return True
 
+    # City-abbreviation + mascot pattern: "BUF Sabres" vs "Buffalo Sabres",
+    # "CHI Blackhawks" vs "Chicago Blackhawks", "NYR Rangers" vs "New York
+    # Rangers". The last word (mascot) must match, and the first word (city
+    # abbreviation) must be 2-4 chars and match the full city one of several
+    # ways: prefix, initials, or initials + first letter of mascot.
+    if len(n_words) == 2 and len(s_words) >= 2:
+        if n_words[-1] == s_words[-1]:  # same mascot
+            city_abbr = n_words[0]
+            sel_city_words = s_words[:-1]
+            sel_mascot = s_words[-1]
+            sel_city_joined = "".join(sel_city_words)
+            sel_city_first = sel_city_words[0]
+            sel_city_initials = "".join(w[0] for w in sel_city_words)
+            sel_city_plus_mascot = sel_city_initials + sel_mascot[0]  # "nyr"
+            if (2 <= len(city_abbr) <= 4 and (
+                sel_city_first.startswith(city_abbr) or
+                sel_city_joined.startswith(city_abbr) or
+                city_abbr == sel_city_initials or
+                city_abbr == sel_city_plus_mascot
+            )):
+                return True
+
     # Single-word needle appears as any sel word: "cubs" vs "chicago cubs"
     if len(n_words) == 1 and n_words[0] in s_words:
         return True
